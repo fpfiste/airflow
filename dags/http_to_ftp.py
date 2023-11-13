@@ -80,12 +80,35 @@ def close_positions(**kwargs):
         }
     r = requests.post(url, cookies=cookies)
 
+
+
+
+
+default_args = {
+    'owner': 'me',
+    'email': ['fabian.pfister@pfister-transporte.ch'],
+    'email_on_failure': True,
+    'email_on_success': True,
+    }
+
+
+
 with DAG(
     'gas_station_to_ftp',
-    schedule_interval=dt.timedelta(days=1),
     start_date=days_ago(1),
+    schedule_interval='55 22 * * *',
+    default_args=default_args
 ) as dag:
 
+    from airflow.operators.email_operator import EmailOperator
+
+    email = EmailOperator(
+            task_id='send_email',
+            to='fabian.pfister@pfister-transporte.ch',
+            subject='Airflow Alert',
+            html_content=""" <h3>Email Test</h3> """,
+            dag=dag
+)
 
     get_file = PythonOperator(
         task_id='get_file',
